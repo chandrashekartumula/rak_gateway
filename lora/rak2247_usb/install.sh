@@ -17,18 +17,23 @@ echo "Gateway configuration:"
 
 # Check dependencies
 echo "Installing dependencies..."
-apt-get -y install git libftdi-dev libusb-dev
+apk add git libftdi1-dev libusb-dev libftdi1
 
 # Build libraries
 
-if [ ! -d libmpsse ]; then
-    git clone https://github.com/devttys0/libmpsse.git
-fi
+#if [ ! -d libmpsse ]; then
+#git clonehttps://github.com/devttys0/libmpsse.git
+#fi
+
+
 pushd libmpsse/src
 ./configure --disable-python
+
 make
 make install
-ldconfig
+
+ldconfig /etc/ld.so.conf.d
+
 popd
 
 # Install LoRaWAN packet forwarder repositories
@@ -36,16 +41,17 @@ INSTALL_DIR="./"
 if [ ! -d "$INSTALL_DIR" ]; then mkdir $INSTALL_DIR; fi
 pushd $INSTALL_DIR
 
+
 # Build LoRa gateway app
 
 if [ ! -d $SCRIPT_DIR/../lora_gateway ]; then
-    git clone https://github.com/Lora-net/lora_gateway.git
+    git clonehttps://github.com/Lora-net/lora_gateway.git
 else
     cp $SCRIPT_DIR/../lora_gateway . -rf
 fi
 pushd lora_gateway
 
-cp ./libloragw/99-libftdi.rules /etc/udev/rules.d/99-libftdi.rules
+#cp ./libloragw/99-libftdi.rules /etc/udev/rules.d/99-libftdi.rules
 cp $SCRIPT_DIR/loragw_spi.ftdi.c ./libloragw/src/
 cp $SCRIPT_DIR/Makefile-gw-lib ./libloragw/Makefile
 cp $SCRIPT_DIR/Makefile-lbt-test ./util_lbt_test/Makefile
@@ -63,17 +69,17 @@ make
 popd
 
 # Build packet forwarder
-if [ ! -d $SCRIPT_DIR/../packet_forwarder ]; then
-    git clone https://github.com/Lora-net/packet_forwarder.git
-else
-    cp $SCRIPT_DIR/../packet_forwarder . -rf
-fi
+#if [ ! -d $SCRIPT_DIR/../packet_forwarder ]; then
+  #  git clonehttps://github.com/Lora-net/packet_forwarder.git
+#else
+  # cp $SCRIPT_DIR/../packet_forwarder . -rf
+#fi
 pushd packet_forwarder
-
 cp $SCRIPT_DIR/Makefile-pk ./lora_pkt_fwd/Makefile
 cp $SCRIPT_DIR/lora_pkt_fwd.c ./lora_pkt_fwd/src/lora_pkt_fwd.c
 
-make
+./compile.sh cleanall
+echo "------------------make doneeeeeeeee--------------------------------------------------"
 rm lora_pkt_fwd/obj/* -f
 popd
 

@@ -25,6 +25,7 @@ else
     git pull
     popd
 fi
+echo "lora gateway and packet forwarder are installed------------------------------------------------------------"
 
 if [ "$1" = "create_img" ]; then
     ./install_for_img.sh
